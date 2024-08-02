@@ -1,13 +1,13 @@
 import cv2
 import glob
 import os
-
+from deepface import DeepFace
 
 face_cascade=cv2.CascadeClassifier('model\haarcascade_frontalface_default.xml')
 
-path = 'faces/*.jpg'
+path = 'Input2/*.jpeg'
 
-output_dir = "extracted_faces"
+output_dir = "output"
 os.makedirs(output_dir, exist_ok=True)
 
 
@@ -22,7 +22,7 @@ for file in img_list :
     if len(faces) == 0:
         print(f"No faces detected in {file}")
     else:
-        for (x, y, w, h) in faces:
+        for (x, y, w, h) in faces [0:2]:
             # Extract the face
             roi_color = img[y:y + h, x:x + w]
 
@@ -36,3 +36,15 @@ for file in img_list :
 
             # Increment the image number
             img_number += 1
+        
+result = DeepFace.verify(
+        img1_path = "output/1.jpg",
+        img2_path = "output/2.jpg", 
+        detector_backend="retinaface"
+    )
+if result['verified'] == True:
+    print ("Identity Verified!")
+    
+else:
+    print ("Verification failed!")
+# print (result)
