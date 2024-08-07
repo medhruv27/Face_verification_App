@@ -3,9 +3,9 @@ import glob
 import os
 from deepface import DeepFace
 
-face_cascade=cv2.CascadeClassifier('model\haarcascade_frontalface_default.xml')
+face_cascade=cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
 
-path = 'Input2/*.jpeg'
+path = 'input/*.jpeg'
 
 output_dir = "output"
 os.makedirs(output_dir, exist_ok=True)
@@ -47,4 +47,3 @@ if result['verified'] == True:
     
 else:
     print ("Verification failed!")
-# print (result)
