@@ -3,6 +3,7 @@ import { StyleSheet, View, TouchableOpacity, Text, Alert} from "react-native";
 import CameraButton from "./components/CameraButton";
 import UploadHandler from "./components/UploadHandler";
 import ImageReviewModal from "./components/ImageReviewModal";
+import LoadingModal from "./components/LoadingModal";
 import theme from './theme';
 
 export default function App() {
@@ -13,6 +14,7 @@ export default function App() {
   const [currentImageType, setCurrentImageType] = useState(null);
   const [isSelfieButtonEnabled, setIsSelfieButtonEnabled] = useState(true);
   const [isIdButtonEnabled, setIsIdButtonEnabled] = useState(true);
+  const [isUploading, setIsUploading] = useState(false);
 
   const handleImageCapture = (imageUri, isSelfie) => {
     setReviewImage(imageUri);
@@ -41,6 +43,8 @@ export default function App() {
       return;
     }
 
+    setIsUploading(true);
+
     try {
       const result = await UploadHandler.uploadImages(selfieImage, idImage);
       Alert.alert('Success', result.message);
@@ -51,6 +55,8 @@ export default function App() {
     } catch (error) {
       console.error('Error uploading images', error.message);
       Alert.alert('Error', 'Failed to upload images. Please try again.');
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -70,6 +76,7 @@ export default function App() {
         onProceed={handleProceed}
         onTryAgain={handleTryAgain}
       />
+      <LoadingModal visible={isUploading} />
     </View>
   );
 }

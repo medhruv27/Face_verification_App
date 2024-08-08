@@ -40,7 +40,7 @@ for file in img_list :
 result = DeepFace.verify(
         img1_path = "output/1.jpg",
         img2_path = "output/2.jpg", 
-        detector_backend="retinaface"
+        #detector_backend="retinaface"
     )
 if result['verified'] == True:
     print ("Identity Verified!")
