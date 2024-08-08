@@ -11,7 +11,9 @@ export default function App() {
   const [reviewImage, setReviewImage] = useState(null);
   const [isReviewModalVisible, setIsReviewModalVisible] = useState(false);
   const [currentImageType, setCurrentImageType] = useState(null);
-  
+  const [isSelfieButtonEnabled, setIsSelfieButtonEnabled] = useState(true);
+  const [isIdButtonEnabled, setIsIdButtonEnabled] = useState(true);
+
   const handleImageCapture = (imageUri, isSelfie) => {
     setReviewImage(imageUri);
     setCurrentImageType(isSelfie ? 'selfie' : 'id');
@@ -21,8 +23,10 @@ export default function App() {
   const handleProceed = () => {
     if (currentImageType === 'selfie') {
       setSelfieImage(reviewImage);
+      setIsSelfieButtonEnabled(false);
     }else {
       setIdImage(reviewImage);
+      setIsIdButtonEnabled(false);
     }
     setIsReviewModalVisible(false);
   };
@@ -42,6 +46,8 @@ export default function App() {
       Alert.alert('Success', result.message);
       setSelfieImage(null);
       setIdImage(null);
+      setIsSelfieButtonEnabled(true);
+      setIsIdButtonEnabled(true);
     } catch (error) {
       console.error('Error uploading images', error.message);
       Alert.alert('Error', 'Failed to upload images. Please try again.');
@@ -50,9 +56,12 @@ export default function App() {
 
   return (
     <View style={styles.container}>
-      <CameraButton label="Take Selfie" isSelfie={true} onCapture={handleImageCapture} />
-      <CameraButton label="Take photo of ID" isSelfie={false} onCapture={handleImageCapture} />
-      <TouchableOpacity style={styles.uploadButton} onPress={handleUpload}>
+      <CameraButton label="Take Selfie" isSelfie={true} onCapture={handleImageCapture} disabled={!isSelfieButtonEnabled} />
+      <CameraButton label="Take photo of ID" isSelfie={false} onCapture={handleImageCapture} disabled={!isIdButtonEnabled} />
+      <TouchableOpacity style={[styles.uploadButton, (!selfieImage || !idImage) && styles.uploadButtonDisabled]} 
+        onPress={handleUpload}
+        disabled={!selfieImage || !idImage}
+      >
         <Text style={styles.uploadButtonText}>UPLOAD</Text>
       </TouchableOpacity>
       <ImageReviewModal
@@ -80,6 +89,9 @@ const styles = StyleSheet.create({
     padding: 15,
     borderRadius: 10,
     alignItems: 'center',
+  },
+  uploadButtonDisabled: {
+    backgroundColor: theme.primary + '50',
   },
   uploadButtonText: {
     color: theme.buttonText,

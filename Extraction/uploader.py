@@ -24,7 +24,7 @@ def upload_media():
         return jsonify({'error': 'No file selected for one or both images'}), 400
     
     if id_card :
-    # if id_card and allowed_file(id_card.filename) and person and allowed_file(person.filename):
+   # if id_card and allowed_file(id_card.filename) and person and allowed_file(person.filename):
         id_card_filename = secure_filename(id_card.filename)
         person_filename = secure_filename(person.filename)    
         id_card.save(os.path.join(uploader.config['UPLOAD_FOLDER'], 'id_card.jpeg'))

@@ -4,8 +4,10 @@ import { StyleSheet, TouchableOpacity, Text } from "react-native";
 import ImagePicker from "./ImagePicker";
 import theme from '../theme';
 
-const CameraButton = ({ label, isSelfie, onCapture }) => {
+const CameraButton = ({ label, isSelfie, onCapture, disabled }) => {
     const handlePress = async () => {
+        if (disabled) return; //prevent action when button is disabled
+
         try {
             const imageUri = await ImagePicker.pickImage(isSelfie);
             if (imageUri) {
@@ -17,7 +19,7 @@ const CameraButton = ({ label, isSelfie, onCapture }) => {
     };
 
     return (
-        <TouchableOpacity style={styles.button} onPress={handlePress}>
+        <TouchableOpacity style={[styles.button, disabled && styles.buttonDisabled]} onPress={handlePress} disabled={disabled}>
             <Text style={styles.buttonText}>{label}</Text>
         </TouchableOpacity>
     );
@@ -31,6 +33,9 @@ const styles = StyleSheet.create({
         marginVertical: 10,
         width: '80%',
         alignItems: 'center',
+    },
+    buttonDisabled: {
+        backgroundColor: 'rgba(46, 204, 113, 0.5)',
     },
     buttonText: {
         color: theme.buttonText,
