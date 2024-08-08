@@ -2,17 +2,17 @@ import * as FileSystem from 'expo-file-system';
 
 const uploadImages = async (selfieUri, idUri) => {
   try {
-    const uploadUrl = 'http://192.168.0.193:8888/upload.php';
+    const uploadUrl = 'http://192.168.0.193:5000/media/upload';
 
     const formData = new FormData();
-    formData.append('selfie', {
+    formData.append('person', {
       uri: selfieUri,
-      name: 'selfie.jpg',
+      name: 'person',
       type: 'image/jpeg',
     });
-    formData.append('idPhoto', {
+    formData.append('id_card', {
       uri: idUri,
-      name: 'id.jpg',
+      name: 'id_card',
       type: 'image/jpeg',
     });
 
@@ -29,7 +29,7 @@ const uploadImages = async (selfieUri, idUri) => {
     }
 
     const result = await response.json();
-    console.log(result.message);
+    console.log(result.output);
 
     return { message: 'Images uploaded successfully' };
   } catch (error) {

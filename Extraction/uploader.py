@@ -3,7 +3,7 @@ import subprocess
 from flask import Flask , request , jsonify
 from werkzeug.utils import secure_filename
 
-UPLOAD_FOLDER = 'E:/argenmistral/finalcv/input'
+UPLOAD_FOLDER = 'Input'
 ALLOWED_EXTENSIONS = set(['png','jpg','jpeg'])
 
 def allowed_file(filename):
@@ -23,7 +23,8 @@ def upload_media():
     if id_card.filename == '' or person.filename == '':
         return jsonify({'error': 'No file selected for one or both images'}), 400
     
-    if id_card and allowed_file(id_card.filename) and person and allowed_file(person.filename):
+    if id_card :
+    # if id_card and allowed_file(id_card.filename) and person and allowed_file(person.filename):
         id_card_filename = secure_filename(id_card.filename)
         person_filename = secure_filename(person.filename)    
         id_card.save(os.path.join(uploader.config['UPLOAD_FOLDER'], 'id_card.jpeg'))
@@ -36,5 +37,7 @@ def upload_media():
         except subprocess.CalledProcessError:
             return jsonify({'error': 'error occurred during face extraction and verification'}), 500
     
+    return jsonify({'error': 'error occurred during face extraction and verification'}), 500
+
 if __name__ == '__main__':
-    uploader.run(debug=True,port=5000)
+    uploader.run(debug=True,port=5000, host='0.0.0.0')
