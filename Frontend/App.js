@@ -1,101 +1,89 @@
 import React, { useState } from "react";
-import { Button, StyleSheet, View, Image, Text, ScrollView } from "react-native";
+import { StyleSheet, View, TouchableOpacity, Text, Alert} from "react-native";
 import CameraButton from "./components/CameraButton";
 import UploadHandler from "./components/UploadHandler";
-import * as FileSystem from 'expo-file-system';
+import ImageReviewModal from "./components/ImageReviewModal";
+import theme from './theme';
 
 export default function App() {
-  const [selfieUri, setSelfieUri] = useState(null);
-  const [idUri, setIdUri] = useState(null);
-  const [selfieKey, setSelfieKey] = useState(Date.now()); // Unique key for selfie
-  const [idKey, setIdKey] = useState(Date.now()); // Unique key for ID photo
+  const [selfieImage, setSelfieImage] = useState(null);
+  const [idImage, setIdImage] = useState(null);
+  const [reviewImage, setReviewImage] = useState(null);
+  const [isReviewModalVisible, setIsReviewModalVisible] = useState(false);
+  const [currentImageType, setCurrentImageType] = useState(null);
+  
+  const handleImageCapture = (imageUri, isSelfie) => {
+    setReviewImage(imageUri);
+    setCurrentImageType(isSelfie ? 'selfie' : 'id');
+    setIsReviewModalVisible(true);
+  };
+  
+  const handleProceed = () => {
+    if (currentImageType === 'selfie') {
+      setSelfieImage(reviewImage);
+    }else {
+      setIdImage(reviewImage);
+    }
+    setIsReviewModalVisible(false);
+  };
 
+  const handleTryAgain = () => {
+    setIsReviewModalVisible(false);
+  };
+  
   const handleUpload = async () => {
+    if (!selfieImage || !idImage) {
+      Alert.alert('Error', 'Please capture both selfie and ID images before uploading.');
+      return;
+    }
+
     try {
-      await UploadHandler.uploadImages();
-      setSelfieUri(null);
-      setIdUri(null);
-      setSelfieKey(Date.now()); // Reset key for selfie
-      setIdKey(Date.now()); // Reset key for ID photo
+      const result = await UploadHandler.uploadImages(selfieImage, idImage);
+      Alert.alert('Success', result.message);
+      setSelfieImage(null);
+      setIdImage(null);
     } catch (error) {
       console.error('Error uploading images', error.message);
+      Alert.alert('Error', 'Failed to upload images. Please try again.');
     }
   };
 
-  const handleSelfie = (uri) => {
-    console.log('Selfie URI:', uri); // Debugging
-    setSelfieUri(uri);
-    setSelfieKey(Date.now()); // Update key for selfie
-  };
-
-  const handleID = (uri) => {
-    console.log('ID URI:', uri); // Debugging
-    setIdUri(uri);
-    setIdKey(Date.now()); // Update key for ID photo
-  };
-
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <View style={styles.buttonContainer}>
-        <CameraButton label="Take Selfie" isSelfie={true} onImageTaken={handleSelfie} />
-        <CameraButton label="Take photo of ID" isSelfie={false} onImageTaken={handleID} />
-      </View>
-      {selfieUri && (
-        <View style={styles.previewContainer}>
-          <Text>Selfie Preview:</Text>
-          <Image key={selfieKey} source={{ uri: selfieUri }} style={styles.previewImage} />
-          <View style={styles.previewButtons}>
-            <Button title="Proceed" onPress={() => setSelfieUri(null)} />
-            <Button title="Take another photo" onPress={() => setSelfieUri(null)} />
-          </View>
-        </View>
-      )}
-      {idUri && (
-        <View style={styles.previewContainer}>
-          <Text>ID Photo Preview:</Text>
-          <Image key={idKey} source={{ uri: idUri }} style={styles.previewImage} />
-          <View style={styles.previewButtons}>
-            <Button title="Proceed" onPress={() => setIdUri(null)} />
-            <Button title="Take another photo" onPress={() => setIdUri(null)} />
-          </View>
-        </View>
-      )}
-      <View style={styles.uploadButton}>
-        <Button title="UPLOAD" onPress={handleUpload} />
-      </View>
-    </ScrollView>
+    <View style={styles.container}>
+      <CameraButton label="Take Selfie" isSelfie={true} onCapture={handleImageCapture} />
+      <CameraButton label="Take photo of ID" isSelfie={false} onCapture={handleImageCapture} />
+      <TouchableOpacity style={styles.uploadButton} onPress={handleUpload}>
+        <Text style={styles.uploadButtonText}>UPLOAD</Text>
+      </TouchableOpacity>
+      <ImageReviewModal
+        visible={isReviewModalVisible}
+        imageUri={reviewImage}
+        onProceed={handleProceed}
+        onTryAgain={handleTryAgain}
+      />
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flexGrow: 1,
-    justifyContent: 'flex-start',
+    flex: 1,
+    justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#fff',
-    paddingTop: 50,
-  },
-  buttonContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    width: '100%',
+    backgroundColor: theme.background,
   },
   uploadButton: {
-    marginTop: 20,
+    position: 'absolute',
+    bottom: 50,
     width: '80%',
-  },
-  previewContainer: {
+    backgroundColor: theme.primary,
+    padding: 15,
+    borderRadius: 10,
     alignItems: 'center',
-    marginVertical: 20,
   },
-  previewImage: {
-    width: 200,
-    height: 200,
-    marginVertical: 10,
-  },
-  previewButtons: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    width: '80%',
+  uploadButtonText: {
+    color: theme.buttonText,
+    fontSize: 16,
+    fontWeight: 'bold',
   },
 });
