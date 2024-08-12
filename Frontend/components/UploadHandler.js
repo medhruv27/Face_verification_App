@@ -2,7 +2,7 @@ import * as FileSystem from 'expo-file-system';
 
 const uploadImages = async (selfieUri, idUri) => {
   try {
-    const uploadUrl = 'http://192.168.0.193:5000/media/upload';
+    const uploadUrl = 'http://192.168.0.87:5000/media/upload';
 
     const formData = new FormData();
     formData.append('person', {
@@ -31,7 +31,7 @@ const uploadImages = async (selfieUri, idUri) => {
     const result = await response.json();
     console.log(result.output);
 
-    return { message: 'Images uploaded successfully' };
+    return { message: result.output };
   } catch (error) {
     console.error('Upload failed:', error.message);
     throw error;

@@ -11,7 +11,7 @@ const pickImage = async (isSelfie) => {
 
   const result = await ImagePicker.launchCameraAsync({
     mediaTypes: ImagePicker.MediaTypeOptions.Images,
-    allowsEditing: true,
+    allowsEditing: false,
     quality: 1,
     cameraType: isSelfie ? 'front' : 'back',
   });
