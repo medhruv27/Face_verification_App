@@ -1,60 +1,41 @@
 import * as FileSystem from 'expo-file-system';
-import { Alert } from 'react-native';
 
-//save paths 
-const selfieImagePath = FileSystem.cacheDirectory + 'selfie.jpg';
-const idImagePath = FileSystem.cacheDirectory + 'id.jpg';
+const uploadImages = async (selfieUri, idUri) => {
+  try {
+    const uploadUrl = 'http://192.168.0.87:5000/media/upload';
 
-//upload 
-const uploadImages = async () => {
-    try {
-      const uploadUrl = 'http://192.168.0.127:8888/upload.php'; // Use your local machine's IP address
-  
-      // Prepare selfie image for upload
-      const selfie = await FileSystem.getInfoAsync(selfieImagePath);
-      const idPhoto = await FileSystem.getInfoAsync(idImagePath);
-  
-      if (!selfie.exists || !idPhoto.exists) {
-        throw new Error('Images not found in cache');
-      }
-  
-      // Upload both images using a fetch request
-      const formData = new FormData();
-      formData.append('selfie', {
-        uri: selfie.uri,
-        name: 'selfie.jpg',
-        type: 'image/jpeg',
-      });
-      formData.append('idPhoto', {
-        uri: idPhoto.uri,
-        name: 'id.jpg',
-        type: 'image/jpeg',
-      });
-  
-      const response = await fetch(uploadUrl, {
-        method: 'POST',
-        body: formData,
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
-  
-      const result = await response.json();
-      console.log(result.message);
-  
-      if (response.ok) {
-        // Remove files from cache after successful upload
-        await FileSystem.deleteAsync(selfieImagePath, { idempotent: true });
-        await FileSystem.deleteAsync(idImagePath, { idempotent: true });
-  
-        Alert.alert('Success', 'Images uploaded and cache cleared');
-      } else {
-        throw new Error(result.message);
-      }
-    } catch (error) {
-      console.error('Upload failed:', error.message);
-      Alert.alert('Upload Error', error.message);
+    const formData = new FormData();
+    formData.append('person', {
+      uri: selfieUri,
+      name: 'person',
+      type: 'image/jpeg',
+    });
+    formData.append('id_card', {
+      uri: idUri,
+      name: 'id_card',
+      type: 'image/jpeg',
+    });
+
+    const response = await fetch(uploadUrl, {
+      method: 'POST',
+      body: formData,
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
     }
-  };
-  
-  export default { uploadImages };
+
+    const result = await response.json();
+    console.log(result.output);
+
+    return { message: result.output };
+  } catch (error) {
+    console.error('Upload failed:', error.message);
+    throw error;
+  }
+};
+
+export default { uploadImages };
