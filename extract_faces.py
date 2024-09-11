@@ -40,12 +40,7 @@ for file in img_list :
 result = DeepFace.verify(
         img1_path = "output/1.jpg",
         img2_path = "output/2.jpg", 
-        distance_metric= "cosine",
-        model_name= "Facenet512",
-        threshold= 0.6,
-        detector_backend="retinaface",
-        # align = False,
-        
+        detector_backend="retinaface"
     )
 if result['verified'] == True:
     print ("Identity Verified!")

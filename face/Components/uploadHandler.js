@@ -2,13 +2,13 @@ import RNFS from 'react-native-fs';
 
 const uploadCapturedImage = async (imageUri) => {
   try {
-    const uploadUrl = 'http://192.168.0.87:5000/media/upload'; // Adjust this to your backend URL
+    const uploadUrl = 'http://127.0.0.1:5000/media/upload'; // Adjust this to your backend URL
 
     // Create a FormData instance
     const formData = new FormData();
-    formData.append('captured_image', {
+    formData.append('frame', {
       uri: imageUri,
-      name: 'captured_image.jpg',
+      name: 'frame.jpg',
       type: 'image/jpeg',
     });
 
