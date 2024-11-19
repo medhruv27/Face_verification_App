@@ -16,6 +16,7 @@ export default function App() {
   const [isFaceInOval, setIsFaceInOval] = useState(false);
   const [isFaceInId, setIsFaceInId] = useState(false);
   const [isBrightEnough, setIsBrightEnough] = useState(false);
+  const [tooManyFaces, setIsTooManyFaces] = useState(false);
   const cameraRef = useRef(null);
 
   const BRIGHTNESS_THRESHOLD = 110;
@@ -59,7 +60,7 @@ export default function App() {
         name: 'frame.jpg',
       });
 
-      const response = await axios.post('http://192.168.0.82:5000/media/upload', formData, {
+      const response = await axios.post('https://reaj516a50.execute-api.ap-south-1.amazonaws.com/media/upload', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
@@ -80,7 +81,7 @@ export default function App() {
   };
 
   const triggerCapture = Worklets.createRunOnJS(() => {
-    setTimeout(captureFrame, 1500); // 1.5 second delay
+    setTimeout(captureFrame); 
   });
 
   const updateFaceInOval = Worklets.createRunOnJS((value) => {
@@ -95,6 +96,10 @@ export default function App() {
     setIsBrightEnough(value);
   });
 
+  const updateTooManyFaces = Worklets.createRunOnJS((value) => {
+    setIsTooManyFaces(value);
+  })
+  
   const frameProcessor = useFrameProcessor((frame) => {
     'worklet';
     const faces = detectFaces(frame);
@@ -161,6 +166,9 @@ export default function App() {
     const averageBrightness = luminanceSum / sampleSize;
     const isBright = averageBrightness > BRIGHTNESS_THRESHOLD;
 
+    const tooMany = faces.length > 2;
+    updateTooManyFaces(tooMany);
+    
     updateFaceInOval(faceInOval);
     updateFaceInId(faceInId);
     updateBrightness(isBright);
@@ -202,13 +210,21 @@ export default function App() {
       
       {isCameraActive && (
         <>
-          <View style={[styles.oval, { borderColor: isFaceInOval ? 'green' : 'red' }]} />
-          <View style={[styles.rectangle, { borderColor: isFaceInId ? 'green' : 'white' }]} />
-          <View style={[styles.idOval, { borderColor: isFaceInId ? 'green' : 'white' }]} />
+          <View style={[styles.oval, { borderColor: isFaceInOval && !tooManyFaces && isBrightEnough ? 'green' : 'white' }]} />
+          <View style={[styles.rectangle, { borderColor: isFaceInId && !tooManyFaces && isBrightEnough ? 'green' : 'white' }]} />
+          <View style={[styles.idOval, { borderColor: isFaceInId && !tooManyFaces && isBrightEnough ? 'green' : 'white' }]} />
           {!isBrightEnough && (
-            <View style={styles.brightnessFeedbackContainer}>
+            <View style={styles.FeedbackContainer}>
               <Text style={styles.warningText}>
                 Please adjust your lighting for better image capture.
+              </Text>
+            </View>
+          )}
+
+          {tooManyFaces && (
+            <View style={styles.FeedbackContainer}>
+              <Text style={styles.warningText}>
+                Please ensure you are the only person in the frame.
               </Text>
             </View>
           )}
@@ -276,9 +292,9 @@ const styles = StyleSheet.create({
     borderColor: 'white',
     borderRadius: 100,
   },
-  brightnessFeedbackContainer: {
+  FeedbackContainer: {
     position: 'absolute',
-    bottom: 20,
+    top: 20,
     left: 0,
     right: 0,
     backgroundColor: 'rgba(0, 0, 0, 0.7)',
